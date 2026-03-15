@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文字拡大鏡</title>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1rem;
+    gap: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1rem;
+    font-weight: normal;
+    color: #888;
+    letter-spacing: 0.1em;
+  }
+
+  #textInput {
+    width: 100%;
+    max-width: 420px;
+    padding: 0.6rem 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+  }
+  #textInput:focus { border-color: #888; }
+
+  /* ── Tabs ── */
+  .tabs-wrapper {
+    width: 100%;
+    max-width: 420px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs-wrapper::-webkit-scrollbar { display: none; }
+
+  #tabs {
+    display: flex;
+    gap: 2px;
+    min-width: max-content;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .tab {
+    min-width: 2.2rem;
+    padding: 0.35rem 0.6rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    background: none;
+    font-size: 0.95rem;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.1s, border-color 0.1s;
+  }
+  .tab:hover { color: #333; }
+  .tab.active {
+    color: #222;
+    font-weight: bold;
+    border-bottom-color: #333;
+  }
+
+  /* ── Display ── */
+  #charDisplay {
+    font-size: clamp(10rem, 60vw, 20rem);
+    line-height: 1;
+    color: #222;
+    min-height: 1em;
+    user-select: none;
+    font-family: 'Klee One', 'UD デジタル 教科書体 NK', 'AR P教科書体M', 'AR教科書体M', sans-serif;
+  }
+
+  #charIndex {
+    font-size: 0.75rem;
+    color: #aaa;
+    min-height: 1em;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    color: #bbb;
+  }
+</style>
+</head>
+<body>
+
+<h1>文字拡大鏡</h1>
+
+<input type="text" id="textInput" placeholder="テキストを入力…" autocomplete="off" spellcheck="false">
+
+<div class="tabs-wrapper">
+  <div id="tabs"></div>
+</div>
+
+<div id="charDisplay"></div>
+<div id="charIndex"></div>
+<div class="hint" id="hint"></div>
+
+<script>
+  const input     = document.getElementById('textInput');
+  const tabsEl    = document.getElementById('tabs');
+  const displayEl = document.getElementById('charDisplay');
+  const indexEl   = document.getElementById('charIndex');
+  const hintEl    = document.getElementById('hint');
+
+  let chars = [];
+  let activeIdx = 0;
+
+  function render() {
+    tabsEl.innerHTML = '';
+    chars.forEach((ch, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab' + (i === activeIdx ? ' active' : '');
+      btn.textContent = ch;
+      btn.addEventListener('click', () => setActive(i));
+      tabsEl.appendChild(btn);
+    });
+
+    if (chars.length === 0) {
+      displayEl.textContent = '';
+      indexEl.textContent = '';
+      hintEl.textContent = '';
+    } else {
+      displayEl.textContent = chars[activeIdx];
+      indexEl.textContent = `${activeIdx + 1} / ${chars.length}`;
+      hintEl.textContent = chars.length > 1 ? '← → キーまたはタブで切り替え' : '';
+    }
+  }
+
+  function setActive(i) {
+    if (i < 0 || i >= chars.length) return;
+    activeIdx = i;
+    render();
+    tabsEl.children[i]?.scrollIntoView({ inline: 'nearest', behavior: 'smooth' });
+  }
+
+  input.addEventListener('input', () => {
+    chars = [...input.value];
+    activeIdx = Math.min(activeIdx, Math.max(chars.length - 1, 0));
+    render();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!chars.length) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); setActive(activeIdx + 1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); setActive(activeIdx - 1); }
+  });
+
+  render();
+</script>
+</body>
+</html>
