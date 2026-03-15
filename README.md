@@ -1,0 +1,2 @@
+# kanjimag
+Kanji Magnifier
